@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import math
 
 
 def random_choose(all, choose_count):
@@ -31,9 +32,9 @@ def primary_facial_area(rects):
 
 
 # 输入一个opencv识别出来的区域的x,y,w,h，返回相比原来正方形各边变长，中心不变的更大的正方形的x,y,w,h
-def bigger_area(x, y, w, h, longer):
+def bigger_area(x, y, w, h, longer=10):
     center = (x + w / 2, y + h / 2)
-    side = max(w, h) + longer
-    x = center[0] - side / 2
-    y = center[1] - side / 2
+    side = int(min(max(w, h) + longer, center[0] * 2, center[1] * 2))  # prevent that x and y is unavailable
+    x = int(center[0] - side / 2) + 1
+    y = int(center[1] - side / 2) + 1
     return x, y, side

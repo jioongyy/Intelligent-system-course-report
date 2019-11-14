@@ -6,9 +6,9 @@ import numpy as np
 import my_function
 
 # argument settings
-rotate_angle = 90
+rotate_angle = -90
 goal_size = 100
-facial_recognize_side = 120
+facial_recognize_side = 100
 sample_frequency = 15
 # ******************
 
@@ -41,11 +41,17 @@ while (vs.isOpened()):
 
     # crop the photo which including the recognize area
     if (len(rects) != 0):
+
+        # print("rects: x:{} y:{} w:{} h:{}".format(rects[0][0],rects[0][1],rects[0][2],rects[0][3]))
+
         # opencv will detect all face appeare in the frame,and every face will store as a element of array
         # we need to find the biggest face area as the dataset from this array "rects"
         facial_area = my_function.primary_facial_area(rects)
-        x, y, side = my_function.bigger_area(facial_area[0],facial_area[1],facial_area[2],facial_area[3])
+        x, y, side = my_function.bigger_area(facial_area[0],facial_area[1],facial_area[2],facial_area[3],10)
         frame = frame[y:y + side, x:x + side]
+
+        # print("modified: x:{} y:{} side:{}".format(x,y,side))
+
         # convert the frame to grayscale
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         count += 1
