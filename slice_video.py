@@ -4,12 +4,13 @@ import cv2
 import os
 import numpy as np
 import my_function
+import uuid
 
 # argument settings
-rotate_angle = -90
+rotate_angle = 90
 goal_size = 100
-facial_recognize_side = 100
-sample_frequency = 15
+facial_recognize_side = 130
+sample_frequency = 30
 # ******************
 
 ap = argparse.ArgumentParser()
@@ -29,6 +30,13 @@ total_frame = 0
 count = 0
 while (vs.isOpened()):
     ret, frame = vs.read()
+    # before call the vs.release(),vs.isOpened() will always maintain "True".
+    # but if vs.read() get the ret value is "False",meanings the whole video is iterate over.
+    # then we can break from this loop
+    # otherwise,this loop will not stop
+    if ret == False:
+        break
+
     # some videos direction is not correct cause opencv cannot recognize the face
     # so need to rotate the video
     frame = imutils.rotate(frame, angle=rotate_angle)
@@ -42,9 +50,8 @@ while (vs.isOpened()):
     # crop the photo which including the recognize area
     if (len(rects) != 0):
 
-        # print("rects: x:{} y:{} w:{} h:{}".format(rects[0][0],rects[0][1],rects[0][2],rects[0][3]))
-
-        # opencv will detect all face appeare in the frame,and every face will store as a element of array
+        # opencv will detect all face appeare in the frame,
+        # and every face will store as a element of array
         # we need to find the biggest face area as the dataset from this array "rects"
         facial_area = my_function.primary_facial_area(rects)
         x, y, side = my_function.bigger_area(facial_area[0],facial_area[1],facial_area[2],facial_area[3],10)
@@ -56,10 +63,14 @@ while (vs.isOpened()):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         count += 1
         if count % sample_frequency == 0:
-            p = os.path.sep.join([args["output"], "{}.png".format(str(total_frame).zfill(5))])
+            # use uuid to identify each frame
+            p = os.path.sep.join([args["output"], "{}.png".format(uuid.uuid1())])
             to_store = imutils.resize(frame, goal_size, goal_size)
-            # the resize result probably is not conform to the goal_size, some deviation can be occured ocassinally
+            # the resize result probably is not conform to the goal_size,
+            # some deviation can be occured ocassinally
             # so we need to judge whether the resize result is standard or not
             if np.array(to_store).shape == (goal_size, goal_size):
                 cv2.imwrite(p, to_store)
                 total_frame += 1
+
+print("finish!!!! generate {} examples".format(total_frame))
